@@ -11,7 +11,7 @@ import logging
 import os
 import subprocess
 import traceback
-
+from sql.sql import EasySQL
 from replit_support import start
 
 formatting = logging.Formatter("[%(asctime)s] - [%(levelname)s] [%(name)s] %(message)s")
@@ -105,13 +105,17 @@ async def main():
         started = False
         while not started:
             async with bot:
+                bot.db = EasySQL()
+                await bot.db.connect(
+                    config.database_url,
+                    ssl=config.database_ssl,
+                )
                 for extension in os.listdir("src"):
                     if extension.endswith(".py") and not extension.startswith("_"):
                         await bot.load_extension(f"src.{extension[:-3]}")
                         log.info(f"Loaded extension {extension[:-3]}")
                 await bot.load_extension("jishaku")
                 log.info("Loaded jishaku")
-
                 observer.start()
                 log.info("Started file watcher")
                 bot.start_time = datetime.datetime.utcnow()
